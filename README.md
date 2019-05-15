@@ -30,4 +30,4 @@ This is a PN532 NFC library for Raspberry Pi.
     ```
     Then set `SEL0: OFF` and `SEL1: OFF`
 3.  Run the example with `python3 example.py`
-4.  Waving the 13.56MHz NFC card and the UID of the card will be printed.
+4.  With Waving a 13.56MHz NFC card, the UID of the card will be printed.
