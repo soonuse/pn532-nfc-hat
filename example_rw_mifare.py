@@ -14,11 +14,11 @@ since 'KEY A' is unreadable. In contrast, the last 6 bytes (KEY B) of the
 
 import pn532.pn532 as nfc
 
-#from pn532.spi import PN532_SPI
-from pn532.uart import PN532_UART
+from pn532.spi import PN532_SPI
+#from pn532.uart import PN532_UART
 
-#pn532 = PN532_SPI(debug=True)
-pn532 = PN532_UART(debug=False)
+pn532 = PN532_SPI(debug=False)
+#pn532 = PN532_UART(debug=False)
 
 ic, ver, rev, support = pn532.get_firmware_version()
 print('Found PN532 with firmware version: {0}.{1}'.format(ver, rev))
