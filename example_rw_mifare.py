@@ -48,7 +48,7 @@ since 'KEY A' is unreadable. In contrast, the last 6 bytes (KEY B) of the
 """
 # Write block #6
 block_number = 6
-key = b'\xFF\xFF\xFF\xFF\xFF\xFF'
+key_a = b'\xFF\xFF\xFF\xFF\xFF\xFF'
 data = bytes([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F])
 
 if pn532.mifare_classic_authenticate_block(
