@@ -175,7 +175,7 @@ class PN532:
         # - Checksum
         # - Postamble (0x00)
         length = len(data)
-        frame = bytearray(length+8)
+        frame = bytearray(length+7)
         frame[0] = _PREAMBLE
         frame[1] = _STARTCODE1
         frame[2] = _STARTCODE2
