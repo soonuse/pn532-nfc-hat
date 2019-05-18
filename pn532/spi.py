@@ -110,7 +110,7 @@ class PN532_SPI(PN532):
         while (time.monotonic() - timestamp) < timeout:
             time.sleep(0.02)   # required
             status = self._spi.xfer(status) #pylint: disable=no-member
-            if reverse_bit(status[1]) == 0x01:  # LSB data is read in MSB
+            if reverse_bit(status[1]) == _SPI_READY:  # LSB data is read in MSB
                 return True      # Not busy anymore!
             else:
                 time.sleep(0.01)  # pause a bit till we ask again
