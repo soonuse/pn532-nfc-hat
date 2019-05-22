@@ -14,7 +14,7 @@ from pn532.spi import PN532_SPI
 if __name__ == '__main__':
     try:
         #pn532 = PN532_I2C(debug=False, reset=6, req=12)
-        pn532 = PN532_SPI(debug=False, reset=6)
+        pn532 = PN532_SPI(debug=False, reset=6, cs=8)
         #pn532 = PN532_UART(debug=False, reset=6)
         
         ic, ver, rev, support = pn532.get_firmware_version()

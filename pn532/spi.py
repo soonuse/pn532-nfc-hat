@@ -54,30 +54,36 @@ class SPIDevice:
         if cs:
             GPIO.setup(self._cs, GPIO.OUT)
             GPIO.output(self._cs, GPIO.HIGH)
-        self.spi.max_speed_hz = 15200
+        self.spi.max_speed_hz = 1000000
         self.spi.mode = 0b00
 
     def writebytes(self, buf):
         if self._cs:
             GPIO.output(self._cs, GPIO.LOW)
+            time.sleep(0.001);
         ret = self.spi.writebytes(list(buf))
         if self._cs:
+            time.sleep(0.001);
             GPIO.output(self._cs, GPIO.HIGH)
         return ret
 
     def readbytes(self, count):
         if self._cs:
             GPIO.output(self._cs, GPIO.LOW)
+            time.sleep(0.001);
         ret = bytearray(self.spi.readbytes(count))
         if self._cs:
+            time.sleep(0.001);
             GPIO.output(self._cs, GPIO.HIGH)
         return ret
 
     def xfer(self, buf):
         if self._cs:
             GPIO.output(self._cs, GPIO.LOW)
+            time.sleep(0.001);
         buf = bytearray(self.spi.xfer(buf))
         if self._cs:
+            time.sleep(0.001);
             GPIO.output(self._cs, GPIO.HIGH)
         return buf
 
@@ -127,6 +133,9 @@ class PN532_SPI(PN532):
     def _wakeup(self):
         """Send any special commands/data to wake up PN532"""
         time.sleep(1)
+        if self._cs:
+            GPIO.output(self._cs, GPIO.LOW)
+        time.sleep(0.002)   # T_osc_start
         self._spi.writebytes(bytearray([0x00])) #pylint: disable=no-member
         time.sleep(1)
 
@@ -135,12 +144,12 @@ class PN532_SPI(PN532):
         status = bytearray([reverse_bit(_SPI_STATREAD), 0])
         timestamp = time.monotonic()
         while (time.monotonic() - timestamp) < timeout:
-            time.sleep(0.02)   # required
+            time.sleep(0.01)   # required
             status = self._spi.xfer(status) #pylint: disable=no-member
             if reverse_bit(status[1]) == _SPI_READY:  # LSB data is read in MSB
                 return True      # Not busy anymore!
             else:
-                time.sleep(0.01)  # pause a bit till we ask again
+                time.sleep(0.005)  # pause a bit till we ask again
         # We timed out!
         return False
 
@@ -150,7 +159,7 @@ class PN532_SPI(PN532):
         frame = bytearray(count+1)
         # Add the SPI data read signal byte, but LSB'ify it
         frame[0] = reverse_bit(_SPI_DATAREAD)
-        time.sleep(0.02)   # required
+        time.sleep(0.005)   # required
         frame = self._spi.xfer(frame) #pylint: disable=no-member
         for i, val in enumerate(frame):
             frame[i] = reverse_bit(val) # turn LSB data to MSB

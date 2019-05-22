@@ -17,7 +17,7 @@ import pn532.pn532 as nfc
 from pn532.spi import PN532_SPI
 #from pn532.uart import PN532_UART
 
-pn532 = PN532_SPI(debug=False)
+pn532 = PN532_SPI(debug=False, cs=8)
 #pn532 = PN532_UART(debug=False)
 
 ic, ver, rev, support = pn532.get_firmware_version()
