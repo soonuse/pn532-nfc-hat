@@ -435,18 +435,59 @@ class PN532:
         If 'pin' is not None, returns the specified pin state.
         """
         response = self.call_function(_COMMAND_READGPIO, response_length=3)
-        # READGPIO response should be in the following format:
-        # (P3 P7 IO1)
-        # Field           Description
-        # -------------   ------------------------------------------
-        # P3              0   0   P35 P34 P33 P32 P31 P30
-        # P7              0   0   0   0   0   P72 P71 0
-        # I0I1            0   0   0   0   0   0   I1  I0
-        p3 = response[0]
-        p7 = response[1]
-        i = response[2]
         if not pin:
-            return p3, p7, i
-        if pin[:-1].lower() not in ('p3', 'p7', 'i'):
+            return tuple(response[:3])
+        pins = {'p3': response[0], 'p7': response[1], 'i': response[2]}
+        if pin[:-1].lower() not in pins.keys():
             return False
-        return True if eval(pin[:-1].lower()) >> int(pin[-1]) & 1 else False
+        return True if pins[pin[:-1].lower()] >> int(pin[-1]) & 1 else False
+
+    def write_gpio(self, pin=None, state=None, p3p7=None):
+        """Write the state to the PN532's GPIO pins.
+        :params pin: <str> specified the pin to write
+        :params state: <bool> pin level
+        :params p3p7: <list> to set multiple pins level, length = 2
+        If 'p3p7' is not None, set the pins with p3p7, there is
+        no need to read pin states before write with the param p3p7
+            P3 = p3p7[0], P7 = p3p7[1]
+        bits:
+            P3[0] = P30,   P7[0] = 0,
+            P3[1] = P31,   P7[1] = P71,
+            P3[2] = P32,   P7[2] = P72,
+            P3[3] = P33,   P7[3] = nu,
+            P3[4] = P34,   P7[4] = nu,
+            P3[5] = P35,   P7[5] = nu,
+            P3[6] = nu,    P7[6] = nu,
+            P3[7] = Val,   P7[7] = Val,
+        For each port that is validated (bit Val = 1), all the bits are applied
+        simultaneously. It is not possible for example to modify the state of
+        the port P32 without applying a value to the ports P30, P31, P33, P34
+        and P35.
+
+        If 'p3p7' is None, set one pin with the params 'pin' and 'state'
+        """
+        params = bytearray(2)
+        if p3p7:
+            # 0x80, the validation bit.
+            parmas[0] = 0x80 | p3p7[0]
+            parmas[1] = 0x80 | p3p7[1]
+            self.call_function(_COMMAND_WRITEGPIO, params=params)
+        else:
+            if pin[:-1].lower() not in ('p3', 'p7'):
+                return
+            p3, p7, _ = self.read_gpio()
+            if pin[:-1].lower() == 'p3':
+                if state:
+                    # 0x80, the validation bit.
+                    params[0] = 0x80 | p3 | (1 << int(pin[-1])) & 0xFF
+                else:
+                    params[0] = 0x80 | p3 & ~(1 << int(pin[-1])) & 0xFF
+                params[1] = 0x00    # leave p7 unchanged
+            if pin[:-1].lower() == 'p7':
+                if state:
+                    # 0x80, the validation bit.
+                    params[1] = 0x80 | p7 | (1 << int(pin[-1])) & 0xFF
+                else:
+                    params[1] = 0x80 | p7 & ~(1 << int(pin[-1])) & 0xFF
+                params[0] = 0x00    # leave p3 unchanged
+            self.call_function(_COMMAND_WRITEGPIO, params=params)
