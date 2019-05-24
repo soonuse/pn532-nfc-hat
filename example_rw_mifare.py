@@ -11,13 +11,14 @@ since 'KEY A' is unreadable. In contrast, the last 6 bytes (KEY B) of the
 4N+3 blocks are readable.
 2.  Block 0 is unwritable. 
 """
+import RPi.GPIO as GPIO
 
 import pn532.pn532 as nfc
 
 from pn532.spi import PN532_SPI
 #from pn532.uart import PN532_UART
 
-pn532 = PN532_SPI(debug=False, cs=8)
+pn532 = PN532_SPI(debug=False, reset=6, cs=8)
 #pn532 = PN532_UART(debug=False)
 
 ic, ver, rev, support = pn532.get_firmware_version()
@@ -60,3 +61,4 @@ if pn532.mifare_classic_authenticate_block(
         print('write failed')
 else:
     print('key error')
+GPIO.cleanup()
