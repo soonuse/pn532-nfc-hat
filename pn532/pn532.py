@@ -230,7 +230,7 @@ class PN532:
         might be returned!
         """
         # Read frame with expected length of data.
-        response = self._read_data(length+8)
+        response = self._read_data(length+7)
         if self.debug:
             print('Read frame:', [hex(i) for i in response])
 
@@ -469,8 +469,8 @@ class PN532:
         params = bytearray(2)
         if p3p7:
             # 0x80, the validation bit.
-            parmas[0] = 0x80 | p3p7[0]
-            parmas[1] = 0x80 | p3p7[1]
+            params[0] = 0x80 | p3p7[0]
+            params[1] = 0x80 | p3p7[1]
             self.call_function(_COMMAND_WRITEGPIO, params=params)
         else:
             if pin[:-1].lower() not in ('p3', 'p7'):
