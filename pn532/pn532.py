@@ -1,11 +1,11 @@
 # Waveshare PN532 NFC Hat control library.
-# Author(s): Tony DiCola
-#			 refactor by Yehui from Waveshare
+# Author(s): Yehui from Waveshare
+#            Tony DiCola
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2015-2018 Adafruit Industries
 # Copyright (c) 2019 Waveshare
+# Copyright (c) 2015-2018 Adafruit Industries
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -438,19 +438,15 @@ class PN532:
         # READGPIO response should be in the following format:
         # (P3 P7 IO1)
         # Field           Description
-		# -------------   ------------------------------------------
-		# P3              0   0   P35 P34 P33 P32 P31 P30
-		# P7              0   0   0   0   0   P72 P71 0
-		# I0I1            0   0   0   0   0   0   I1  I0
+        # -------------   ------------------------------------------
+        # P3              0   0   P35 P34 P33 P32 P31 P30
+        # P7              0   0   0   0   0   P72 P71 0
+        # I0I1            0   0   0   0   0   0   I1  I0
         p3 = response[0]
         p7 = response[1]
         i = response[2]
         if not pin:
             return p3, p7, i
-        if (pin[:-1].lower() == 'p3') and (len(pin) == 3):
-            return True if (p3 >> int(pin[-1]) & 1) else False
-        if (pin[:-1].lower() == 'p7') and (len(pin) == 3):
-            return True if (p7 >> int(pin[-1]) & 1) else False
-        if (pin[:-1].lower() == 'i') and (len(pin) == 2):
-            return True if (i >> int(pin[-1]) & 1) else False
-        return False
+        if pin[:-1].lower() not in ('p3', 'p7', 'i'):
+            return False
+        return True if eval(pin[:-1].lower()) >> int(pin[-1]) & 1 else False
