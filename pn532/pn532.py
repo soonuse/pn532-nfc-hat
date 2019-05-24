@@ -418,3 +418,39 @@ class PN532:
         not read then None will be returned.
         """
         return self.mifare_classic_read_block(block_number)[0:4] # only 4 bytes per page
+
+    def read_gpio(self, pin=None):
+        """Read the state of the PN532's GPIO pins.
+        :params pin: <str> specified the pin to read
+        :return:
+        If 'pin' is None, returns 3 bytes containing the pin state where:
+            P3[0] = P30,   P7[0] = 0,   I[0] = I0,
+            P3[1] = P31,   P7[1] = P71, I[1] = I1,
+            P3[2] = P32,   P7[2] = P72, I[2] = 0,
+            P3[3] = P33,   P7[3] = 0,   I[3] = 0,
+            P3[4] = P34,   P7[4] = 0,   I[4] = 0,
+            P3[5] = P35,   P7[5] = 0,   I[5] = 0,
+            P3[6] = 0,     P7[6] = 0,   I[6] = 0,
+            P3[7] = 0,     P7[7] = 0,   I[7] = 0,
+        If 'pin' is not None, returns the specified pin state.
+        """
+        response = self.call_function(_COMMAND_READGPIO, response_length=3)
+        # READGPIO response should be in the following format:
+        # (P3 P7 IO1)
+        # Field           Description
+		# -------------   ------------------------------------------
+		# P3              0   0   P35 P34 P33 P32 P31 P30
+		# P7              0   0   0   0   0   P72 P71 0
+		# I0I1            0   0   0   0   0   0   I1  I0
+        p3 = response[0]
+        p7 = response[1]
+        i = response[2]
+        if not pin:
+            return p3, p7, i
+        if (pin[:-1].lower() == 'p3') and (len(pin) == 3):
+            return True if (p3 >> int(pin[-1]) & 1) else False
+        if (pin[:-1].lower() == 'p7') and (len(pin) == 3):
+            return True if (p7 >> int(pin[-1]) & 1) else False
+        if (pin[:-1].lower() == 'i') and (len(pin) == 2):
+            return True if (i >> int(pin[-1]) & 1) else False
+        return False
