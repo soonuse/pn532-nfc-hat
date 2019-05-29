@@ -1,6 +1,5 @@
 # Waveshare PN532 NFC Hat control library.
-# Author: Tony DiCola
-#         refactor by Yehui from Waveshare
+# Author: Yehui from Waveshare
 #
 # The MIT License (MIT)
 #
@@ -43,6 +42,10 @@ from .pn532 import PN532, BusyError
 DEV_SERIAL          = '/dev/ttyS0'
 BAUD_RATE           = 115200
 
+# I0/I1 pins for UART mode setting
+_I0_PIN                        = 20
+_I1_PIN                        = 21
+
 
 class PN532_UART(PN532):
     """Driver for the PN532 connected over UART. Pass in a hardware UART device.
@@ -69,8 +72,14 @@ class PN532_UART(PN532):
         GPIO.setmode(GPIO.BCM)
         if reset:
             GPIO.setup(reset, GPIO.OUT)
+            GPIO.output(reset, True)
         if irq:
-            GPIO.setup(irq, GPIO.OUT)
+            GPIO.setup(irq, GPIO.IN)
+        # I0: LOW & I1: LOW, UART mode.
+        GPIO.setup(_I0_PIN, GPIO.OUT)
+        GPIO.output(_I0_PIN, GPIO.LOW)
+        GPIO.setup(_I1_PIN, GPIO.OUT)
+        GPIO.output(_I1_PIN, GPIO.LOW)
 
     def _reset(self, pin):
         """Perform a hardware reset toggle"""
@@ -83,7 +92,7 @@ class PN532_UART(PN532):
 
     def _wakeup(self):
         """Send any special commands/data to wake up PN532"""
-        #self._write_frame([_HOSTTOPN532, _COMMAND_SAMCONFIGURATION, 0x01])
+        self._uart.write(b'\x55\x55\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00') # wake up!
         self.SAM_configuration()
 
     def _wait_ready(self, timeout=0.001):
@@ -99,11 +108,10 @@ class PN532_UART(PN532):
         if self.debug:
             print("Reading: ", [hex(i) for i in frame])
         else:
-            time.sleep(0.1)
+            time.sleep(0.005)
         return frame
 
     def _write_data(self, framebytes):
         """Write a specified count of bytes to the PN532"""
         self._uart.read(self._uart.in_waiting)    # clear FIFO queue of UART
-        self._uart.write(b'\x55\x55\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00') # wake up!
         self._uart.write(framebytes)
