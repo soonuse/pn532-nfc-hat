@@ -1,6 +1,5 @@
 # Waveshare PN532 NFC Hat control library.
-# Author: Tony DiCola
-#         refactor by Yehui from Waveshare
+# Author: Yehui from Waveshare
 #
 # The MIT License (MIT)
 #
@@ -44,6 +43,10 @@ _SPI_DATAWRITE                 = 0x01
 _SPI_DATAREAD                  = 0x03
 _SPI_READY                     = 0x01
 
+# I0/I1 pins for SPI mode setting
+_I0_PIN                        = 20
+_I1_PIN                        = 21
+
 
 class SPIDevice:
     """Implements SPI device on spidev"""
@@ -55,7 +58,7 @@ class SPIDevice:
             GPIO.setup(self._cs, GPIO.OUT)
             GPIO.output(self._cs, GPIO.HIGH)
         self.spi.max_speed_hz = 1000000
-        self.spi.mode = 0b00
+        self.spi.mode = 0b10    # CPOL=1 & CPHA=0
 
     def writebytes(self, buf):
         if self._cs:
@@ -116,10 +119,17 @@ class PN532_SPI(PN532):
         GPIO.setmode(GPIO.BCM)
         if reset:
             GPIO.setup(reset, GPIO.OUT)
+            GPIO.output(reset, True)
         if cs:
             GPIO.setup(cs, GPIO.OUT)
+            GPIO.output(cs, True)
         if irq:
-            GPIO.setup(irq, GPIO.OUT)
+            GPIO.setup(irq, GPIO.IN)
+        # I0: LOW & I1: HIGH, SPI mode.
+        GPIO.setup(_I0_PIN, GPIO.OUT)
+        GPIO.output(_I0_PIN, GPIO.LOW)
+        GPIO.setup(_I1_PIN, GPIO.OUT)
+        GPIO.output(_I1_PIN, GPIO.HIGH)
 
     def _reset(self, pin):
         """Perform a hardware reset toggle"""
