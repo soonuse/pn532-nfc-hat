@@ -43,10 +43,6 @@ _SPI_DATAWRITE                 = 0x01
 _SPI_DATAREAD                  = 0x03
 _SPI_READY                     = 0x01
 
-# I0/I1 pins for SPI mode setting
-_I0_PIN                        = 20
-_I1_PIN                        = 21
-
 
 class SPIDevice:
     """Implements SPI device on spidev"""
@@ -125,11 +121,6 @@ class PN532_SPI(PN532):
             GPIO.output(cs, True)
         if irq:
             GPIO.setup(irq, GPIO.IN)
-        # I0: LOW & I1: HIGH, SPI mode.
-        GPIO.setup(_I0_PIN, GPIO.OUT)
-        GPIO.output(_I0_PIN, GPIO.LOW)
-        GPIO.setup(_I1_PIN, GPIO.OUT)
-        GPIO.output(_I1_PIN, GPIO.HIGH)
 
     def _reset(self, pin):
         """Perform a hardware reset toggle"""

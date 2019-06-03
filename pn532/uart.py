@@ -42,10 +42,6 @@ from .pn532 import PN532, BusyError
 DEV_SERIAL          = '/dev/ttyS0'
 BAUD_RATE           = 115200
 
-# I0/I1 pins for UART mode setting
-_I0_PIN                        = 20
-_I1_PIN                        = 21
-
 
 class PN532_UART(PN532):
     """Driver for the PN532 connected over UART. Pass in a hardware UART device.
@@ -75,11 +71,6 @@ class PN532_UART(PN532):
             GPIO.output(reset, True)
         if irq:
             GPIO.setup(irq, GPIO.IN)
-        # I0: LOW & I1: LOW, UART mode.
-        GPIO.setup(_I0_PIN, GPIO.OUT)
-        GPIO.output(_I0_PIN, GPIO.LOW)
-        GPIO.setup(_I1_PIN, GPIO.OUT)
-        GPIO.output(_I1_PIN, GPIO.LOW)
 
     def _reset(self, pin):
         """Perform a hardware reset toggle"""

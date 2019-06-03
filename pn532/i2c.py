@@ -1,6 +1,5 @@
 # Waveshare PN532 NFC Hat control library.
-# Author: Tony DiCola
-#         refactor by Yehui from Waveshare
+# Author: Yehui from Waveshare
 #
 # The MIT License (MIT)
 #
@@ -44,7 +43,7 @@ I2C_ADDRESS                    = 0x24
 I2C_CHANNEL                    = 1
 
 # ctypes defines for i2c, see <linux/i2c-dev.h>
-I2C_SLAVE                       = 1795
+I2C_SLAVE                      = 1795
 
 
 class I2CDevice:
@@ -95,8 +94,7 @@ class PN532_I2C(PN532):
             GPIO.setup(reset, GPIO.OUT)
             GPIO.output(reset, True)
         if irq:
-            GPIO.setup(irq, GPIO.OUT)
-            GPIO.output(irq, True)
+            GPIO.setup(irq, GPIO.IN)
         if req:
             GPIO.setup(req, GPIO.OUT)
             GPIO.output(req, True)
