@@ -31,9 +31,11 @@ print('Found card with UID:', [hex(i) for i in uid])
 key_a = b'\xFF\xFF\xFF\xFF\xFF\xFF'
 # Now we try to go through all 16 sectors (each having 4 blocks)
 for i in range(64):
-    if pn532.mifare_classic_authenticate_block(
-        uid, block_number=i, key_number=nfc.MIFARE_CMD_AUTH_A, key=key_a):
-        print(i, ':', 
-            ' '.join(['%02X' % x
-                for x in pn532.mifare_classic_read_block(i)]))
+    try:
+        pn532.mifare_classic_authenticate_block(
+            uid, block_number=i, key_number=nfc.MIFARE_CMD_AUTH_A, key=key_a)
+        print(i, ':', ' '.join(['%02X' % x
+            for x in pn532.mifare_classic_read_block(i)]))
+    except nfc.PN532Error as e:
+        print(e.errmsg)
 GPIO.cleanup()

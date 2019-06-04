@@ -52,13 +52,12 @@ block_number = 6
 key_a = b'\xFF\xFF\xFF\xFF\xFF\xFF'
 data = bytes([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F])
 
-if pn532.mifare_classic_authenticate_block(
-    uid, block_number=block_number, key_number=nfc.MIFARE_CMD_AUTH_A, key=key_a):
+try:
+    pn532.mifare_classic_authenticate_block(
+        uid, block_number=block_number, key_number=nfc.MIFARE_CMD_AUTH_A, key=key_a)
     pn532.mifare_classic_write_block(block_number, data)
     if pn532.mifare_classic_read_block(block_number) == data:
         print('write block %d successfully' % block_number)
-    else:
-        print('write failed')
-else:
-    print('key error')
+except nfc.PN532Error as e:
+    print(e.errmsg)
 GPIO.cleanup()

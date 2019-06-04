@@ -34,8 +34,6 @@ The main difference is the interfaces implements.
 
 import RPi.GPIO as GPIO
 
-__version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/soonuse/pn532-nfc-hat.git"
 
 # pylint: disable=bad-whitespace
 _PREAMBLE                      = 0x00
@@ -141,6 +139,45 @@ _GPIO_VALIDATIONBIT            = 0x80
 _ACK                           = b'\x00\x00\xFF\x00\xFF\x00'
 _FRAME_START                   = b'\x00\x00\xFF'
 # pylint: enable=bad-whitespace
+
+PN532_ERRORS = {
+    0x01: 'PN532 ERROR TIMEOUT',
+    0x02: 'PN532 ERROR CRC',
+    0x03: 'PN532 ERROR PARITY',
+    0x04: 'PN532 ERROR COLLISION_BITCOUNT',
+    0x05: 'PN532 ERROR MIFARE_FRAMING',
+    0x06: 'PN532 ERROR COLLISION_BITCOLLISION',
+    0x07: 'PN532 ERROR NOBUFS',
+    0x09: 'PN532 ERROR RFNOBUFS',
+    0x0a: 'PN532 ERROR ACTIVE_TOOSLOW',
+    0x0b: 'PN532 ERROR RFPROTO',
+    0x0d: 'PN532 ERROR TOOHOT',
+    0x0e: 'PN532 ERROR INTERNAL_NOBUFS',
+    0x10: 'PN532 ERROR INVAL',
+    0x12: 'PN532 ERROR DEP_INVALID_COMMAND',
+    0x13: 'PN532 ERROR DEP_BADDATA',
+    0x14: 'PN532 ERROR MIFARE_AUTH',
+    0x18: 'PN532 ERROR NOSECURE',
+    0x19: 'PN532 ERROR I2CBUSY',
+    0x23: 'PN532 ERROR UIDCHECKSUM',
+    0x25: 'PN532 ERROR DEPSTATE',
+    0x26: 'PN532 ERROR HCIINVAL',
+    0x27: 'PN532 ERROR CONTEXT',
+    0x29: 'PN532 ERROR RELEASED',
+    0x2a: 'PN532 ERROR CARDSWAPPED',
+    0x2b: 'PN532 ERROR NOCARD',
+    0x2c: 'PN532 ERROR MISMATCH',
+    0x2d: 'PN532 ERROR OVERCURRENT',
+    0x2e: 'PN532 ERROR NONAD',
+}
+
+
+class PN532Error(Exception):
+    """PN532 error code"""
+    def __init__(self, err):
+        Exception.__init__(self)
+        self.err = err
+        self.errmsg = PN532_ERRORS[err]
 
 
 class BusyError(Exception):
@@ -256,7 +293,7 @@ class PN532:
         # Return frame data.
         return response[offset+2:offset+2+frame_len]
 
-    def call_function(self, command, response_length=0, params=[], timeout=1): # pylint: disable=dangerous-default-value
+    def call_function(self, command, response_length=0, params=None, timeout=1):
         """Send specified command to the PN532 and expect up to response_length
         bytes back in a response.  Note that less than the expected bytes might
         be returned!  Params can optionally specify an array of bytes to send as
@@ -265,6 +302,8 @@ class PN532:
         response is available within the timeout.
         """
         # Build frame data with command and parameters.
+        if params is None:
+            params = []
         data = bytearray(2+len(params))
         data[0] = _HOSTTOPN532
         data[1] = command & 0xFF
@@ -355,6 +394,8 @@ class PN532:
         response = self.call_function(_COMMAND_INDATAEXCHANGE,
                                       params=params,
                                       response_length=1)
+        if response[0]:
+            raise PN532Error(response[0])
         return response[0] == 0x00
 
     def mifare_classic_read_block(self, block_number):
@@ -368,7 +409,8 @@ class PN532:
                                       params=[0x01, MIFARE_CMD_READ, block_number & 0xFF],
                                       response_length=17)
         # Check first response is 0x00 to show success.
-        if response[0] != 0x00:
+        if response[0]:
+            raise PN532Error(response[0])
             return None
         # Return first 4 bytes since 16 bytes are always returned.
         return response[1:]
@@ -390,6 +432,8 @@ class PN532:
         response = self.call_function(_COMMAND_INDATAEXCHANGE,
                                       params=params,
                                       response_length=1)
+        if response[0]:
+            raise PN532Error(response[0])
         return response[0] == 0x0
 
     def ntag2xx_write_block(self, block_number, data):
@@ -409,6 +453,8 @@ class PN532:
         response = self.call_function(_COMMAND_INDATAEXCHANGE,
                                       params=params,
                                       response_length=1)
+        if response[0]:
+            raise PN532Error(response[0])
         return response[0] == 0x00
 
     def ntag2xx_read_block(self, block_number):
@@ -442,14 +488,14 @@ class PN532:
             return False
         return True if pins[pin[:-1].lower()] >> int(pin[-1]) & 1 else False
 
-    def write_gpio(self, pin=None, state=None, p3p7=None):
+    def write_gpio(self, pin=None, state=None, p3=None, p7=None):
         """Write the state to the PN532's GPIO pins.
         :params pin: <str> specified the pin to write
         :params state: <bool> pin level
-        :params p3p7: <list> to set multiple pins level, length = 2
-        If 'p3p7' is not None, set the pins with p3p7, there is
-        no need to read pin states before write with the param p3p7
-            P3 = p3p7[0], P7 = p3p7[1]
+        :params p3: byte to set multiple pins level
+        :params p7: byte to set multiple pins level
+        If p3 or p7 is not None, set the pins with p3 or p7, there is
+        no need to read pin states before write with the param p3 or p7
         bits:
             P3[0] = P30,   P7[0] = 0,
             P3[1] = P31,   P7[1] = P71,
@@ -464,13 +510,13 @@ class PN532:
         the port P32 without applying a value to the ports P30, P31, P33, P34
         and P35.
 
-        If 'p3p7' is None, set one pin with the params 'pin' and 'state'
+        If p3 and p7 are None, set one pin with the params 'pin' and 'state'
         """
         params = bytearray(2)
-        if p3p7:
+        if p3 or p7:
             # 0x80, the validation bit.
-            params[0] = 0x80 | p3p7[0]
-            params[1] = 0x80 | p3p7[1]
+            params[0] = 0x80 | p3 & 0xFF if p3 else 0x00
+            params[1] = 0x80 | p7 & 0xFF if p7 else 0x00
             self.call_function(_COMMAND_WRITEGPIO, params=params)
         else:
             if pin[:-1].lower() not in ('p3', 'p7'):
