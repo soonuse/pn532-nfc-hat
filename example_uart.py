@@ -8,8 +8,8 @@ def uart_read(uart):
     while True:
         result = uart.read(uart.in_waiting)
         if result:
-            print('r:', result)
-        time.sleep(0.5)
+            print('r:', ' '.join([('%02X' % i) for i in result]))
+        time.sleep(0.05)
 
 def uart_write(uart):
     while True:
@@ -21,7 +21,7 @@ def uart_write(uart):
             print(e)
         uart.write(content)
         if content:
-            print('w:', content)
+            print('w:', ' '.join([('%02X' % i) for i in content]))
         time.sleep(0.05)
 
 
@@ -38,14 +38,7 @@ followed by Enter
         print('serial0 is not enabled')
         exit(-1)
     ts = []
-    ts.append(threading.Thread(target=uart_write, args=(uart,), daemon=True))
-    ts.append(threading.Thread(target=uart_read, args=(uart,), daemon=True))
+    ts.append(threading.Thread(target=uart_write, args=(uart,)))
+    ts.append(threading.Thread(target=uart_read, args=(uart,)))
     for t in ts:
         t.start()
-    error = False
-    while not error:
-        for t in ts:
-            if t.is_alive():
-                continue
-            else:
-                break_flag = True
