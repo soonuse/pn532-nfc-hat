@@ -1,27 +1,30 @@
-import serial
+"""
+Simplest example for UART test.
+"""
 import binascii
 import threading
 import time
+import serial
 
 
 def uart_read(uart):
+    """UART read"""
     while True:
         result = uart.read(uart.in_waiting)
         if result:
             print('r:', ' '.join([('%02X' % i) for i in result]))
         time.sleep(0.05)
 
+
 def uart_write(uart):
+    """UART write"""
     while True:
         content = input()
         content = content.replace(' ', '').replace('0x', '').replace(',', '')
-        try:
-            content = binascii.unhexlify(content)
-        except Exception as e:
-            print(e)
-        uart.write(content)
+        content = binascii.unhexlify(content)
         if content:
             print('w:', ' '.join([('%02X' % i) for i in content]))
+        uart.write(content)
         time.sleep(0.05)
 
 
