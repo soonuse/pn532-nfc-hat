@@ -29,8 +29,6 @@ This module will let you communicate with a PN532 RFID/NFC chip
 using UART (ttyS0) on the Raspberry Pi.
 """
 
-__version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/soonuse/pn532-nfc-hat.git"
 
 import time
 import serial
@@ -87,9 +85,15 @@ class PN532_UART(PN532):
         self.SAM_configuration()
 
     def _wait_ready(self, timeout=0.001):
-        """Wait `timeout` seconds"""
-        time.sleep(timeout)
-        return True
+        """Wait for response frame, up to `timeout` seconds"""
+        timestamp = time.monotonic()
+        while (time.monotonic() - timestamp) < timeout:
+            if self._uart.in_waiting:
+                return True
+            else:
+                time.sleep(0.05)  # lets ask again soon!
+        # Timed out!
+        return False
 
     def _read_data(self, count):
         """Read a specified count of bytes from the PN532."""
