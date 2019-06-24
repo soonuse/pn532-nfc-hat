@@ -28,8 +28,6 @@
 This module will let you communicate with a PN532 RFID/NFC chip
 using I2C on the Raspberry Pi.
 """
-__version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/soonuse/pn532-nfc-hat.git"
 
 import fcntl
 import os
@@ -120,7 +118,7 @@ class PN532_I2C(PN532):
 
     def _wait_ready(self, timeout=10):
         """Poll PN532 if status byte is ready, up to `timeout` seconds"""
-        time.sleep(0.1) # required after _wait_ready()
+        time.sleep(0.01) # required after _wait_ready()
         status = bytearray(1)
         timestamp = time.monotonic()
         while (time.monotonic() - timestamp) < timeout:
@@ -131,7 +129,7 @@ class PN532_I2C(PN532):
                 continue
             if status == b'\x01':
                 return True  # No longer busy
-            time.sleep(0.05)  # lets ask again soon!
+            time.sleep(0.005)  # lets ask again soon!
         # Timed out!
         return False
 
