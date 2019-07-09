@@ -171,12 +171,14 @@ PN532_ERRORS = {
     0x2e: 'PN532 ERROR NONAD',
 }
 
+
 class PN532Error(Exception):
     """PN532 error code"""
     def __init__(self, err):
         Exception.__init__(self)
         self.err = err
         self.errmsg = PN532_ERRORS[err]
+
 
 class BusyError(Exception):
     """Base class for exceptions in this module."""
@@ -535,60 +537,3 @@ class PN532:
                     params[1] = 0x80 | p7 & ~(1 << int(pin[-1])) & 0xFF
                 params[0] = 0x00    # leave p3 unchanged
             self.call_function(_COMMAND_WRITEGPIO, params=params)
-
-    def tg_init_as_target(self,
-        mode,
-        mifare_params=None,
-        felica_params=None,
-        nfcid3t=None,
-        gt=None,
-        tk=None,
-        timeout=60
-    ):
-        """The host controller uses this command to configure the PN532 as
-        target.
-        :params mode: a byte indicating which mode the PN532 should respect.
-        :params mifare_params: information needed to be able to be
-        activated at 106 kbps in passive mode.
-        :params felica_params: information to be able to respond to a polling
-        request at 212/424 kbps in passive mode.
-        :params nfcid3t: used in the ATR_RES in case of ATR_REQ received from
-        the initiator
-        :params gt: an array containing the general bytes to be used in the
-        ATR_RES. This information is optional and the length is not fixed
-        (max. 47 bytes),
-        :params tk: an array containing the historical bytes to be used in the
-        ATS when PN532 is in ISO/IEC14443-4 PICC emulation mode. This
-        information is optional.
-        :returns mode: a byte indicating in which mode the PN532 has been
-        activated.
-        :returns initiator_command: an array containing the first valid frame
-        received by the PN532 once the PN532 has been initialized.
-        """
-        if not mifare_params:
-            mifare_params = [0] * 6
-        if not felica_params:
-            felica_params = [0] * 18
-        if not nfcid3t:
-            nfcid3t = [0] * 10
-        params = []
-        params.append(mode)
-        params += mifare_params
-        params += felica_params
-        params += nfcid3t
-        if gt:
-            params.append(len(gt))
-            params += gt
-        else:
-            params.append(0x00)
-        if tk:
-            params.append(len(tk))
-            params += tk
-        else:
-            params.append(0x00)
-        # Try to read 64 bytes although the response length is not fixed
-        response = self.call_function(_COMMAND_TGINITASTARGET, 64, params=params, timeout=timeout)
-        if response:
-            mode_activated = response[0]
-            initiator_command = response[1:]
-            return (mode_activated, initiator_command)

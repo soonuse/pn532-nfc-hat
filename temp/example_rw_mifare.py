@@ -15,11 +15,11 @@ import RPi.GPIO as GPIO
 
 import pn532.pn532 as nfc
 
-from pn532.spi import PN532_SPI
-#from pn532.uart import PN532_UART
+#from pn532.spi import PN532_SPI
+from pn532.uart import PN532_UART
 
-pn532 = PN532_SPI(debug=False, reset=20, cs=4)
-#pn532 = PN532_UART(debug=False, reset=20)
+#pn532 = PN532_SPI(debug=False, reset=20, cs=4)
+pn532 = PN532_UART(debug=False, reset=20)
 
 ic, ver, rev, support = pn532.get_firmware_version()
 print('Found PN532 with firmware version: {0}.{1}'.format(ver, rev))
@@ -47,10 +47,9 @@ since 'KEY A' is unreadable. In contrast, the last 6 bytes (KEY B) of the
 4N+3 blocks are readable.
 2.  Block 0 is unwritable. 
 """
-# Write block #6
-block_number = 6
+block_number = 0
 key_a = b'\xFF\xFF\xFF\xFF\xFF\xFF'
-data = bytes([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F])
+data = bytes([0x4A, 0x3B, 0xC7, 0x54, 0xE2, 0x08, 0x04, 0x00, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69])
 
 try:
     pn532.mifare_classic_authenticate_block(

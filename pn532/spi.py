@@ -29,8 +29,6 @@ This module will let you communicate with a PN532 RFID/NFC chip
 using SPI on the Raspberry Pi.
 """
 
-__version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/soonuse/pn532-nfc-hat.git"
 
 import time
 import spidev

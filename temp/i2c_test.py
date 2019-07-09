@@ -6,13 +6,13 @@ type RFID tag
 import RPi.GPIO as GPIO
 
 import pn532.pn532 as nfc
-from pn532.spi import PN532_SPI
-#from pn532.i2c import PN532_I2C
+#from pn532.spi import PN532_SPI
+from pn532.i2c import PN532_I2C
 #from pn532.uart import PN532_UART
 
-pn532 = PN532_SPI(cs=4, reset=20, debug=False)
-#pn532 = PN532_I2C(debug=False, reset=20, req=16)
-#pn532 = PN532_UART(debug=False, reset=20)
+#pn532 = PN532_SPI(cs=4, reset=20, debug=False)
+pn532 = PN532_I2C(debug=False, reset=20, req=16)
+#pn532 = PN532_UART(debug=False)
 
 ic, ver, rev, support = pn532.get_firmware_version()
 print('Found PN532 with firmware version: {0}.{1}'.format(ver, rev))
@@ -40,5 +40,4 @@ for i in range(64):
             for x in pn532.mifare_classic_read_block(i)]))
     except nfc.PN532Error as e:
         print(e.errmsg)
-        break
 GPIO.cleanup()

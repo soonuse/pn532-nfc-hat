@@ -7,8 +7,8 @@ import RPi.GPIO as GPIO
 from pn532.spi import PN532_SPI
 #from pn532.uart import PN532_UART
 
-pn532 = PN532_SPI(reset=6, cs=8, debug=False)
-#pn532 = PN532_UART(reset=6, debug=False)
+pn532 = PN532_SPI(reset=20, cs=4, debug=False)
+#pn532 = PN532_UART(reset=20, debug=False)
 
 ic, ver, rev, support = pn532.get_firmware_version()
 print('Found PN532 with firmware version: {0}.{1}'.format(ver, rev))
@@ -21,12 +21,13 @@ for i in [1, 2]:
     print('P7%d: %s' % (i, True if (p7 >> i & 1) else False))
 for i in [0, 1]:
     print('I%d: %s' % (i, True if (i0i1 >> i & 1) else False))
-pn532.write_gpio('P30', False)
-pn532.write_gpio('P31', False)
-# pn532.write_gpio('P32', False)    # RESERVED (Must be HIGH)
-pn532.write_gpio('P33', False)
-# pn532.write_gpio('P34', False)    # RESERVED (Must be HIGH)
-pn532.write_gpio('P35', False)
+## pn532.write_gpio('P30', False)
+## pn532.write_gpio('P31', False)
+## # pn532.write_gpio('P32', False)    # RESERVED (Must be HIGH)
+## pn532.write_gpio('P33', False)
+## # pn532.write_gpio('P34', False)    # RESERVED (Must be HIGH)
+## pn532.write_gpio('P35', False)
+pn532.write_gpio(p3=0b00010100)
 pn532.write_gpio('P71', False)
 pn532.write_gpio('P72', False)
 print('After:')
