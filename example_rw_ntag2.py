@@ -6,11 +6,11 @@ import RPi.GPIO as GPIO
 
 import pn532.pn532 as nfc
 
-#from pn532.spi import PN532_SPI
-from pn532.uart import PN532_UART
+from pn532 import *
 
-#pn532 = PN532_SPI(debug=False, reset=20, cs=4)
-pn532 = PN532_UART(debug=False, reset=20)
+pn532 = PN532_SPI(debug=False, reset=20, cs=4)
+#pn532 = PN532_I2C(debug=False, reset=20, req=16)
+#pn532 = PN532_UART(debug=False, reset=20)
 
 ic, ver, rev, support = pn532.get_firmware_version()
 print('Found PN532 with firmware version: {0}.{1}'.format(ver, rev))
