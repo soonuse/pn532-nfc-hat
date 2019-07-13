@@ -511,7 +511,7 @@ class PN532:
         If p3 and p7 are None, set one pin with the params 'pin' and 'state'
         """
         params = bytearray(2)
-        if p3 or p7:
+        if (p3 is not None) or (p7 is not None):
             # 0x80, the validation bit.
             params[0] = 0x80 | p3 & 0xFF if p3 else 0x00
             params[1] = 0x80 | p7 & 0xFF if p7 else 0x00
