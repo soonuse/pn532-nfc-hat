@@ -1,6 +1,8 @@
 # PN532 NFC HAT
 This is a PN532 NFC library for Raspberry Pi.
 
+![image](http://www.waveshare.net/photo/accBoard/PN532-NFC-HAT/PN532-NFC-HAT-3.jpg)
+
 ## Features
 -   Support I2C, SPI and HSU of PN532
 -   Easy to understand how the PN532 chip works
